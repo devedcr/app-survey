@@ -1,0 +1,41 @@
+version: "3.2"
+services:
+  db:
+    container_name: db_survey
+    image: postgres:13.13
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=edcr
+      - POSTGRES_DB=db_survey
+    volumes:
+      - db_survey:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    expose:
+      - 5432
+    networks:
+      net_survey:
+  api:
+    container_name: api_survey
+    build:
+      context: ./
+    depends_on:
+      db:
+        condition: service_started
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/db_survey
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=edcr
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SERVER_ADDRESS=api
+      - SERVER_PORT=8080
+    networks:
+      net_survey:
+    ports:
+      - "8080:8080"
+volumes:
+  db_survey:
+    driver: local
+networks:
+  net_survey:
+    driver: bridge
